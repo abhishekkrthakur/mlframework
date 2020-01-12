@@ -1,5 +1,6 @@
 import pandas as pd
 from sklearn import model_selection
+import math
 
 """
 - -- binary classification
@@ -56,9 +57,46 @@ class CrossValidation:
                 raise Exception("Invalid number of targets for this problem type")
             if self.num_targets < 2 and self.problem_type == "multi_col_regression":
                 raise Exception("Invalid number of targets for this problem type")
-            kf = model_selection.KFold(n_splits=self.num_folds)
-            for fold, (train_idx, val_idx) in enumerate(kf.split(X=self.dataframe)):
-                self.dataframe.loc[val_idx, 'kfold'] = fold
+            
+            num_fold_size=math.floor(len(self.dataframe)/self.num_folds)
+            num_remainder =len(self.dataframe)%self.num_folds
+
+            self.dataframe.sort_values(by=self.target_cols , inplace=True)
+            df_remainder = self.dataframe.sample(n=num_remainder, random_state=42)
+            df_kfold=self.dataframe[~self.dataframe.index.isin(df_remainder.index)]
+            df_remainder=df_remainder.reset_index(drop=True)
+            df_kfold=df_kfold.reset_index(drop=True)
+
+            
+            df_all=[]
+            cnt=0
+            for i in range(num_fold_size):
+                df_subset=df_kfold.loc[i*self.num_folds:(i+1)*(self.num_folds)-1,:]
+                df_subset = df_subset.sample(frac=1).reset_index(drop=True)
+                cnt=cnt+1
+                for j in range(self.num_folds):
+                    if cnt==1:
+                        df_all.append(df_subset.loc[[j],:])
+                    else:
+                        df_all[j]=df_all[j].append(df_subset.loc[[j],:], ignore_index=True)
+
+            assigned_kfold=0
+            if len(df_remainder)>0:
+                for i in range(len(df_remainder)):
+                    df_all[assigned_kfold]=df_all[assigned_kfold].append(df_remainder.loc[i,:],ignore_index=True)
+                    assigned_kfold=assigned_kfold+1
+                    if assigned_kfold>self.num_folds:
+                        assigned_kfold=0
+            
+            for i in range(self.num_folds):
+                if i==0:
+                    df_all[i]['kfold']=i
+                    self.dataframe=df_all[i]
+                else:
+                    df_all[i]['kfold']=i
+                    self.dataframe=self.dataframe.append(df_all[i],ignore_index=True)
+
+        
         
         elif self.problem_type.startswith("holdout_"):
             holdout_percentage = int(self.problem_type.split("_")[1])
@@ -81,9 +119,9 @@ class CrossValidation:
 
 
 if __name__ == "__main__":
-    df = pd.read_csv("../input/train_multilabel.csv")
-    cv = CrossValidation(df, shuffle=True, target_cols=["attribute_ids"], 
-                         problem_type="multilabel_classification", multilabel_delimiter=" ")
+    df = pd.read_csv("../input/train_reg.csv")
+    cv = CrossValidation(df, shuffle=True, target_cols=["SalePrice"], 
+                         problem_type="single_col_regression", num_folds=3, multilabel_delimiter=" ")
     df_split = cv.split()
     print(df_split.head())
     print(df_split.kfold.value_counts())
