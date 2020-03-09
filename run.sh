@@ -1,5 +1,5 @@
 export TRAINING_DATA=input/train_folds.csv
-export TEST_DATA=input/test.csv
+export TEST_DATA=input/test_cat.csv
 
 export MODEL=$1
 
