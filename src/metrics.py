@@ -50,3 +50,21 @@ class ClassificationMetrics:
     @staticmethod
     def _logloss(y_true, y_pred):
         return skmetrics.log_loss(y_true=y_true, y_pred=y_pred)
+
+    def all_metrics(self, y_true, y_pred, y_proba):
+        """
+        Returns a dictionary of all metrics.
+        :param y_true: ndarray like
+        The true Values
+        :param y_pred: ndarray like
+        The binary predictions
+        :param y_proba: ndarray like
+        The proba predictions
+        :return: dict
+        A dictionary with all evaluation metrics
+        """
+        dict_all_metrics = dict()
+        for m in self.metrics.keys():
+            dict_all_metrics[m] = self(m, y_true, y_pred, y_proba)
+
+        return dict_all_metrics
