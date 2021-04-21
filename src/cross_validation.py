@@ -36,6 +36,25 @@ class CrossValidation:
         
         self.dataframe["kfold"] = -1
     
+    def  _stratifiedKfold_regression(self):
+
+        ''' 
+        sort the values for target value and then get each chunk of size k
+        and assign each row with k-fold value indexed 0
+
+        for samples // k_folds, complete k-fold sequence assignment takes place
+        samples % kfolds samples takes value of k upto the remainder length 
+        '''
+
+        num_samples = len(self.df)
+        self.df = self.df.sort_values(self.target_cols,ascending=True)
+        for i in range(0,num_samples,self.kfolds):
+            k_counter = 0
+            for j in range(i,min(i+self.kfolds,num_samples)):
+                self.df.loc[j,'kfolds'] = k_counter
+                k_counter +=1
+                
+                
     def split(self):
         if self.problem_type in ("binary_classification", "multiclass_classification"):
             if self.num_targets != 1:
@@ -56,9 +75,13 @@ class CrossValidation:
                 raise Exception("Invalid number of targets for this problem type")
             if self.num_targets < 2 and self.problem_type == "multi_col_regression":
                 raise Exception("Invalid number of targets for this problem type")
+                
+            self._stratifiedKfold_regression()
+            '''
             kf = model_selection.KFold(n_splits=self.num_folds)
             for fold, (train_idx, val_idx) in enumerate(kf.split(X=self.dataframe)):
                 self.dataframe.loc[val_idx, 'kfold'] = fold
+            '''
         
         elif self.problem_type.startswith("holdout_"):
             holdout_percentage = int(self.problem_type.split("_")[1])
