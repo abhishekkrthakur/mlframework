@@ -46,11 +46,11 @@ class CrossValidation:
         samples % kfolds samples takes value of k upto the remainder length 
         '''
 
-        num_samples = len(self.df)
-        self.df = self.df.sort_values(self.target_cols,ascending=True)
-        for i in range(0,num_samples,self.kfolds):
+        num_samples = len(self.dataframe)
+        self.dataframe = self.df.sort_values(self.target_cols,ascending=True)
+        for i in range(0,num_samples,self.num_folds):
             k_counter = 0
-            for j in range(i,min(i+self.kfolds,num_samples)):
+            for j in range(i,min(i+self.num_folds,num_samples)):
                 self.df.loc[j,'kfolds'] = k_counter
                 k_counter +=1
                 
