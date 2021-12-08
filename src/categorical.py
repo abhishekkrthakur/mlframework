@@ -43,9 +43,9 @@ class CategoricalFeatures:
         return self.output_df
 
     def _one_hot(self):
-        ohe = preprocessing.OneHotEncoder()
-        ohe.fit(self.df[self.cat_feats].values)
-        return ohe.transform(self.df[self.cat_feats].values)
+        self.ohe = preprocessing.OneHotEncoder()
+        self.ohe.fit(self.df[self.cat_feats].values)
+        return self.ohe.transform(self.df[self.cat_feats].values)
 
     def fit_transform(self):
         if self.enc_type == "label":
@@ -78,7 +78,7 @@ class CategoricalFeatures:
             return dataframe
 
         elif self.enc_type == "ohe":
-            return self.ohe(dataframe[self.cat_feats].values)
+            return self.ohe.transform(dataframe[self.cat_feats].values)
         
         else:
             raise Exception("Encoding type not understood")
