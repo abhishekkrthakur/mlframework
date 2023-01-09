@@ -103,8 +103,8 @@ if __name__ == "__main__":
                                     handle_na=True)
     full_data_transformed = cat_feats.fit_transform()
     
-    X = full_data_transformed[:train_len, :]
-    X_test = full_data_transformed[train_len:, :]
+    X = full_data_transformed.iloc[:train_len, :]
+    X_test = full_data_transformed.iloc[train_len:, :]
 
     clf = linear_model.LogisticRegression()
     clf.fit(X, df.target.values)
